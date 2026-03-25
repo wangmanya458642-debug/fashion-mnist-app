@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from model_cnn import FashionCNN  # 从同一 src 文件夹导入模型
+from src.model_cnn import FashionCNN
 
 device = torch.device("cpu")
 

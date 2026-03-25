@@ -4,7 +4,7 @@ import numpy as np
 import os
 import sys
 sys.path.append(os.path.dirname(__file__))
-from predict_cnn import predict_cnn  # 从 src 导入预测函数
+from src.predict_cnn import predict_cnn  # 从 src 导入预测函数
 
 
 labels = ["T-shirt", "Trouser", "Pullover", "Dress", "Coat",
