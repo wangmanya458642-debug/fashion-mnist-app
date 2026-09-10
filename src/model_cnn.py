@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
 
+
 class FashionCNN(nn.Module):
+    """CNN architecture expected by the committed team checkpoint."""
+
     def __init__(self):
         super().__init__()
         self.features = nn.Sequential(

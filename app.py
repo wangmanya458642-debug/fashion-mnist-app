@@ -1,23 +1,34 @@
+import numpy as np
 import streamlit as st
 from PIL import Image
-import numpy as np
-import os
-import sys
-sys.path.append(os.path.dirname(__file__))
-from src.predict_cnn import predict_cnn  # 从 src 导入预测函数
+
+from src.predict_cnn import predict_cnn
 
 
-labels = ["T-shirt", "Trouser", "Pullover", "Dress", "Coat",
-          "Sandal", "Shirt", "Sneaker", "Bag", "Ankle Boot"]
+LABELS = [
+    "T-shirt/top",
+    "Trouser",
+    "Pullover",
+    "Dress",
+    "Coat",
+    "Sandal",
+    "Shirt",
+    "Sneaker",
+    "Bag",
+    "Ankle boot",
+]
 
 st.title("Fashion-MNIST Classifier (CNN)")
-st.write("Upload an image of a fashion item, and the model will predict its category.")
+st.write("Upload a fashion-item image to classify it into one of 10 Fashion-MNIST categories.")
+st.caption(
+    "For best results, use a centered, Fashion-MNIST-style image with a light item "
+    "on a dark background. The image is converted to grayscale and resized to 28×28 pixels."
+)
 
-file = st.file_uploader("Upload an image", type=["png","jpg","jpeg"])
-if file:
-    img = Image.open(file).convert("L").resize((28,28))
-    st.image(img, caption="Uploaded Image")
+uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("L").resize((28, 28))
+    st.image(image, caption="Preprocessed 28×28 grayscale image", width=280)
 
-    arr = np.array(img)
-    pred = predict_cnn(arr)
-    st.write("### Prediction:", labels[pred])
+    prediction = predict_cnn(np.asarray(image))
+    st.success(f"Prediction: {LABELS[prediction]}")

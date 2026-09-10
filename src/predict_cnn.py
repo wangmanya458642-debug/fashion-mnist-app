@@ -1,19 +1,41 @@
-import torch
+from functools import lru_cache
+from pathlib import Path
+
 import numpy as np
-from src.model_cnn import FashionCNN
+import torch
 
-device = torch.device("cpu")
+from .model_cnn import FashionCNN
 
-# 加载训练好的模型
-model = FashionCNN()
-model.load_state_dict(torch.load("./models/best_fashion_cnn.pth", map_location=device))
 
-model.eval()
+DEVICE = torch.device("cpu")
+MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "best_fashion_cnn.pth"
+
+
+@lru_cache(maxsize=1)
+def load_model(checkpoint_path=MODEL_PATH):
+    """Load the CNN checkpoint once for CPU inference."""
+    model = FashionCNN()
+    state_dict = torch.load(checkpoint_path, map_location=DEVICE, weights_only=True)
+    model.load_state_dict(state_dict)
+    model.eval()
+    return model
+
+
+def preprocess_image(image_array):
+    """Convert a 28x28 grayscale image with values in [0, 255] to a tensor."""
+    image_array = np.asarray(image_array)
+    if image_array.shape != (28, 28):
+        raise ValueError(f"Expected a 28x28 grayscale image, got {image_array.shape}.")
+    if image_array.min() < 0 or image_array.max() > 255:
+        raise ValueError("Image values must be in the range [0, 255].")
+
+    normalized = image_array.astype(np.float32) / 255.0
+    return torch.from_numpy(normalized).unsqueeze(0).unsqueeze(0)
+
 
 def predict_cnn(image_array):
-    image_array = image_array / 255.0
-    tensor = torch.tensor(image_array, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+    """Return the predicted Fashion-MNIST class index."""
+    tensor = preprocess_image(image_array)
     with torch.no_grad():
-        output = model(tensor)
-        pred = torch.argmax(output, dim=1).item()
-    return pred
+        logits = load_model()(tensor)
+    return int(torch.argmax(logits, dim=1).item())
